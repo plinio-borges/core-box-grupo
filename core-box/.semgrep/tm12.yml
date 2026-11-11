@@ -1,0 +1,9 @@
+rules:
+  - id: box-tm12-md5-para-senha
+    languages: [python]
+    severity: ERROR
+    message: "TM-12 - MD5 nao deve ser utilizado para armazenamento de senhas."
+    metadata:
+      threat_model: TM-12
+      cwe: "CWE-916"
+    pattern: hashlib.md5(...)

@@ -1,0 +1,14 @@
+rules:
+  - id: box-tm06-token-authorization-em-log
+    languages: [python]
+    severity: ERROR
+    message: "TM-06 - token ou cabecalho Authorization nao deve ser registrado em log."
+    metadata:
+      threat_model: TM-06
+      cwe: "CWE-532"
+    patterns:
+      - pattern-inside: |
+          log.$LEVEL(...)
+      - pattern-either:
+          - pattern: request.headers.get("Authorization")
+          - pattern: request.cookies.get("box_token")

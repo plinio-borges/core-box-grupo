@@ -1,0 +1,12 @@
+rules:
+  - id: box-tm04-limite-override-vindo-do-cliente
+    languages: [python]
+    severity: ERROR
+    message: "TM-04 (CWE-602) - limite_override nao pode ser controlado pela requisicao do cliente."
+    metadata:
+      threat_model: TM-04
+      cwe: "CWE-602"
+    pattern-either:
+      - pattern: '$DADOS.get("limite_override", ...)'
+      - pattern: '$DADOS["limite_override"]'
+

@@ -1,0 +1,12 @@
+rules:
+  - id: box-tm03-conta-origem-vinda-do-cliente
+    languages: [python]
+    severity: ERROR
+    message: "TM-03 (BOLA / CWE-639) - a conta de origem não pode vir da requisição do cliente."
+    metadata:
+      threat_model: TM-03
+      cwe: "CWE-639"
+      owasp: "API1:2023"
+    pattern-either:
+      - pattern: '$DADOS.get("conta_origem", ...)'
+      - pattern: '$DADOS["conta_origem"]'
