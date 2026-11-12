@@ -1,13 +1,6 @@
-"""Core Box — Core Bancário do Banco Box (versão de laboratório).
-
-ATENÇÃO: esta aplicação contém vulnerabilidades INTENCIONAIS para fins de
-treinamento (Projeto Integrador DevSecOps — Dia 02). Não use em produção.
-"""
+"""Core Box — Core Bancário do Banco Box (versão endurecida)."""
 import logging
-import traceback
-
-from flask import Flask, redirect, request, make_response
-
+from flask import Flask, redirect, make_response
 from app import config, db
 
 
@@ -17,8 +10,11 @@ def create_app(test_config=None):
     if test_config:
         app.config.update(test_config)
 
+    app.config["DEBUG"] = False
+    app.config["PROPAGATE_EXCEPTIONS"] = False
+
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
 
@@ -38,24 +34,26 @@ def create_app(test_config=None):
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(interna_bp)
 
+    @app.after_request
+    def adicionar_cabecalhos_seguranca(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        return response
+
     @app.route("/")
     def index():
         return redirect("/login")
 
     @app.route("/health")
     def health():
-        # TM-07: expõe versão e ambiente para "facilitar o suporte"
-        return {"status": "ok", "app": "core-box", "versao": config.Config.VERSAO,
-                "ambiente": config.Config.AMBIENTE, "debug": app.config["DEBUG"]}
+        return {"status": "ok"}
 
     @app.errorhandler(Exception)
     def erro_generico(exc):
-        # TM-07 (CWE-209): devolve a stack trace completa ao cliente
-        detalhe = traceback.format_exc()
-        app.logger.error("Erro não tratado: %s", detalhe)
-        resp = make_response(
-            {"erro": str(exc), "tipo": exc.__class__.__name__, "trace": detalhe}, 500
-        )
+        # Correcao TM-07: registra o erro internamente e devolve resposta generica sem stack trace
+        app.logger.exception("Erro interno não tratado")
+        resp = make_response({"erro": "Erro interno no servidor."}, 500)
         return resp
 
     return app
